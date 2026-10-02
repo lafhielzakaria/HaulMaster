@@ -72,13 +72,10 @@ async function getWaitingList(req, res) {
     }
 }
 
-async function updateUserStatus(req, res) {
+async function setUserActiveStatus(req, res) {
     try {
         const { id } = req.params;
-        const { status } = req.body;
-        if (!['active', 'inactive', 'waiting_list'].includes(status)) {
-            return res.status(400).json({ message: 'Invalid status value' });
-        }
+        const status = req.query.active === 'false' ? 'inactive' : 'active';
         const user = await User.findByIdAndUpdate(id, { status }, { new: true }).select('-password');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
@@ -89,4 +86,4 @@ async function updateUserStatus(req, res) {
     }
 }
 
-module.exports = { register, login, profile, getWaitingList, updateUserStatus };
+module.exports = { register, login, profile, getWaitingList, setUserActiveStatus };
