@@ -1,41 +1,41 @@
-const Trajet = require('../models/Trajet');
-const { checkResourceAvailability } = require('../services/conflictService');
+const { assignTrip, reassignTrip, startTrip, completeTrip } = require('../services/tripService');
 
-async function createTrip(req, res, next) {
-  try {
-    const { driverId, camionId, remorqueId, startDate, endDate } = req.body;
-    await checkResourceAvailability(driverId, camionId, remorqueId, startDate, endDate);
-    const newTrip = await Trajet.create(req.body);
-    return res.status(201).json({ success: true, data: newTrip });
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function updateTripStatus(req, res, next) {
-  try {
-    const { id } = req.params;
-    const { status, endMileage, fuelConsumed } = req.body;
-
-    const trip = await Trajet.findById(id);
-    if (!trip) {
-      const err = new Error('Trip not found');
-      err.statusCode = 404;
-      throw err;
+async function assignTripHandler(req, res, next) {
+    try {
+        const { departureSite, arrivalSite, plannedStart, plannedEnd, driver, camion, remorque } = req.body;
+        const trip = await assignTrip({ departureSite, arrivalSite, plannedStart, plannedEnd, driver, camion, remorque });
+        return res.status(201).json({ success: true, data: trip });
+    } catch (error) {
+        next(error);
     }
-
-    trip.status = status;
-    if (endMileage) trip.endMileage = endMileage;
-    if (fuelConsumed) trip.fuelConsumed = fuelConsumed;
-
-    await trip.save();
-    return res.status(200).json({ success: true, data: trip });
-  } catch (error) {
-    next(error);
-  }
 }
 
-module.exports = {
-  createTrip,
-  updateTripStatus
-};
+async function reassignTripHandler(req, res, next) {
+    try {
+        const trip = await reassignTrip(req.params.id, req.body);
+        return res.status(200).json({ success: true, data: trip });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function startTripHandler(req, res, next) {
+    try {
+        const trip = await startTrip(req.params.id, req.body.startMileage, req.user.userId);
+        return res.status(200).json({ success: true, data: trip });
+    } catch (error) {
+        next(error);
+    }
+}
+
+async function completeTripHandler(req, res, next) {
+    try {
+        const { endMileage, fuelConsumed, fuelCost, driverRemarks } = req.body;
+        const trip = await completeTrip(req.params.id, { endMileage, fuelConsumed, fuelCost, driverRemarks }, req.user.userId);
+        return res.status(200).json({ success: true, data: trip });
+    } catch (error) {
+        next(error);
+    }
+}
+
+module.exports = { assignTripHandler, reassignTripHandler, startTripHandler, completeTripHandler };

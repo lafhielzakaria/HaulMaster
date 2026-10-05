@@ -1,25 +1,10 @@
-const permissions = {
-    admin: [
-        'auth:getWaitingList',
-        'auth:setUserActiveStatus',
-        'fleet:read',
-        'fleet:write',
-        'trip:read',
-        'trip:write',
-    ],
-    driver: [
-        'trip:read',
-    ],
-};
-
-function authorize(permission) {
+function authorizeRole(...roles) {
     return (req, res, next) => {
-        const role = req.user?.role;
-        if (!role || !permissions[role]?.includes(permission)) {
+        if (!roles.includes(req.user?.role)) {
             return res.status(403).json({ message: 'Access denied. Insufficient permissions.' });
         }
         next();
     };
 }
 
-module.exports = { authorize, permissions };
+module.exports = authorizeRole;
