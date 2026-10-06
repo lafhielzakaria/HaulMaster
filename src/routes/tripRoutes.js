@@ -1,12 +1,15 @@
 const express = require('express');
 const router = express.Router();
-const { assignTripHandler, reassignTripHandler, startTripHandler, completeTripHandler } = require('../controllers/tripController');
+const { assignTripHandler, reassignTripHandler, startTripHandler, completeTripHandler, getAllTripsHandler } = require('../controllers/tripController');
 const authenticateToken = require('../middlewares/authMiddleware');
-const authorizeRole = require('../middlewares/roleMiddleware');
+const { authorize } = require('../middlewares/roleMiddleware');
+const validate = require('../validations/validate');
+const tripSchemas = require('../validations/schemas/tripSchemas');
 
-// Admin only
-router.post('/', authenticateToken, authorizeRole('admin'), assignTripHandler);
-router.patch('/:id/reassign', authenticateToken, authorizeRole('admin'), reassignTripHandler);
+router.get('/', authenticateToken, authorize('trip:read'), getAllTripsHandler);
+
+router.post('/', authenticateToken, authorize('trip:write'), validate(tripSchemas.assign), assignTripHandler);
+router.patch('/:id/reassign', authenticateToken, authorize('trip:write'), reassignTripHandler);
 
 // Driver
 router.patch('/:id/start', authenticateToken, startTripHandler);

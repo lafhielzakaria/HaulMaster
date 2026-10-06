@@ -21,10 +21,7 @@ async function getOne(req, res) {
 
 async function create(req, res) {
     try {
-        const { matricule, marque, modele, annee, capacite, statut } = req.body || {};
-        if (!matricule || !marque || !modele || !annee || !capacite) {
-            return res.status(400).json({ message: 'All fields are required' });
-        }
+        const { matricule, marque, modele, annee, capacite, statut } = req.body;
         const camion = await Camion.create({ matricule, marque, modele, annee, capacite, statut });
         return res.status(201).json({ message: 'Camion created', camion });
     } catch (error) {

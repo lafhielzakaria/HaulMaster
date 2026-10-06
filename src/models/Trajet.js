@@ -38,34 +38,13 @@ const tripSchema = new mongoose.Schema(
       enum: ['TODO', 'IN_PROGRESS', 'COMPLETED', 'CANCELED'],
       default: 'TODO'
     },
-    startMileage: {
-      type: Number,
-      default: null
-    },
-    endMileage: {
-      type: Number,
-      default: null
-    },
-    fuelConsumed: {
-      type: Number,
-      default: null
-    },
-    fuelCost: {
-      type: Number,
-      default: null
-    },
-    distance: {
-      type: Number,
-      default: null
-    },
-    averageConsumption: {
-      type: Number,
-      default: null
-    },
-    driverRemarks: {
-      type: String,
-      default: null
-    }
+    startMileage:       { type: Number },
+    endMileage:         { type: Number },
+    fuelConsumed:       { type: Number },
+    fuelCost:           { type: Number },
+    distance:           { type: Number },
+    averageConsumption: { type: Number },
+    driverRemarks:      { type: String },
   },
   {
     timestamps: true

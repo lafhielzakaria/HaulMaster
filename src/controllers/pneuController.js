@@ -21,10 +21,7 @@ async function getOne(req, res) {
 
 async function create(req, res) {
     try {
-        const { marque, taille, type, statut, camion } = req.body || {};
-        if (!marque || !taille || !type) {
-            return res.status(400).json({ message: 'marque, taille and type are required' });
-        }
+        const { marque, taille, type, statut, camion } = req.body;
         const pneu = await Pneu.create({ marque, taille, type, statut, camion: camion || null });
         return res.status(201).json({ message: 'Pneu created', pneu });
     } catch (error) {
