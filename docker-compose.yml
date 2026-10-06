@@ -1,15 +1,15 @@
 services:
   app:
-    build: .
-    ports:
-      - "5000:5000"
+    image: node:20-alpine
+    working_dir: /app
     volumes:
       - .:/app
       - /app/node_modules
-    environment:
-      - MONGO_URI=mongodb://mongo:27017/myapp
-      - JWT_SECRET=zakariapass
-      - JWT_EXPIRES_IN=1h
+    ports:
+      - "5000:5000"
+    env_file:
+      - .env
+    command: sh -c "npm install && npx nodemon --legacy-watch server.js"
     depends_on:
       mongo:
         condition: service_healthy
