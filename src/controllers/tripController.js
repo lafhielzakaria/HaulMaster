@@ -1,5 +1,7 @@
 const { assignTrip, reassignTrip, startTrip, completeTrip } = require('../services/tripService');
+const { generateDriverTripsPdf } = require('../services/pdfService');
 const Trajet = require('../models/Trajet');
+const User = require('../models/User');
 
 async function getAllTripsHandler(req, res, next) {
     try {
@@ -51,4 +53,17 @@ async function completeTripHandler(req, res, next) {
     }
 }
 
-module.exports = { assignTripHandler, reassignTripHandler, startTripHandler, completeTripHandler, getAllTripsHandler };
+async function driverTripsPdfHandler(req, res, next) {
+    try {
+        const driver = await User.findById(req.params.id).select('-password');
+        if (!driver) return res.status(404).json({ message: 'Driver not found' });
+        const trips = await Trajet.find({ driver: req.params.id, status: { $in: ['TODO', 'IN_PROGRESS'] } })
+            .populate('camion', 'matricule marque modele')
+            .populate('remorque', 'matricule');
+        generateDriverTripsPdf(driver, trips, res);
+    } catch (error) {
+        next(error);
+    }
+}
+
+module.exports = { assignTripHandler, reassignTripHandler, startTripHandler, completeTripHandler, getAllTripsHandler, driverTripsPdfHandler };

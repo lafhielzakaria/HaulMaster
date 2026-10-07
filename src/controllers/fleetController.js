@@ -2,7 +2,9 @@ const Camion = require('../models/Camion');
 
 async function getAll(req, res) {
     try {
-        const camions = await Camion.find();
+        const filter = {};
+        if (req.query.statut) filter.statut = req.query.statut;
+        const camions = await Camion.find(filter);
         return res.json({ camions });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
