@@ -1,11 +1,20 @@
 const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 
 function generateDriverTripsPdf(driver, trips, res) {
     const doc = new PDFDocument({ margin: 50 });
+    const fileName = `trips_${driver._id}_${Date.now()}.pdf`;
+    const filePath = path.join(__dirname, '../../pdfs', fileName);
+
+    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+    const writeStream = fs.createWriteStream(filePath);
+    doc.pipe(writeStream);
+    doc.pipe(res);
 
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=trips_${driver._id}.pdf`);
-    doc.pipe(res);
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
 
     doc.fontSize(18).text('HaulMaster — Ordre de Mission', { align: 'center' });
     doc.moveDown();

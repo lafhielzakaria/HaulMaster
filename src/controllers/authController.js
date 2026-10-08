@@ -1,16 +1,16 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const userRepository = require('../repositories/userRepository');
 
 async function register(req, res) {
     try {
         const { email, password } = req.body;
-        const existingUser = await User.findOne({ email });
+        const existingUser = await userRepository.findByEmail(email);
         if (existingUser) {
             return res.status(400).json({ message: 'User already exists' });
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const user = await User.create({ email, password: hashedPassword ,role : 'driver',status : 'waiting_list'});
+        const user = await userRepository.create({ email, password: hashedPassword, role: 'driver', status: 'waiting_list' });
         return res.status(201).json({
             message: 'Registration successful. Your account is pending admin approval.',
             user: { id: user._id, email: user.email, status: user.status },
@@ -23,7 +23,7 @@ async function register(req, res) {
 async function login(req, res) {
     try {
         const { email, password } = req.body;
-        const user = await User.findOne({ email });
+        const user = await userRepository.findByEmail(email);
         if (!user) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
@@ -50,7 +50,7 @@ async function login(req, res) {
 
 async function profile(req, res) {
     try {
-        const user = await User.findById(req.user.userId).select('-password');
+        const user = await userRepository.findByIdExcludePassword(req.user.userId);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -62,7 +62,7 @@ async function profile(req, res) {
 
 async function getWaitingList(req, res) {
     try {
-        const users = await User.find({ status: 'waiting_list' }).select('-password');
+        const users = await userRepository.findWaitingList();
         return res.json({ users });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
@@ -73,7 +73,7 @@ async function setUserActiveStatus(req, res) {
     try {
         const { id } = req.params;
         const status = req.query.active === 'false' ? 'inactive' : 'active';
-        const user = await User.findByIdAndUpdate(id, { status }, { new: true }).select('-password');
+        const user = await userRepository.updateStatus(id, status);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }

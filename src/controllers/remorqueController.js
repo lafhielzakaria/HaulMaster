@@ -1,8 +1,8 @@
-const Remorque = require('../models/Remorque');
+const remorqueRepository = require('../repositories/remorqueRepository');
 
 async function getAll(req, res) {
     try {
-        const remorques = await Remorque.find();
+        const remorques = await remorqueRepository.findAll();
         return res.json({ remorques });
     } catch (error) {
         return res.status(500).json({ message: 'Server error', error: error.message });
@@ -11,7 +11,7 @@ async function getAll(req, res) {
 
 async function getOne(req, res) {
     try {
-        const remorque = await Remorque.findById(req.params.id);
+        const remorque = await remorqueRepository.findById(req.params.id);
         if (!remorque) return res.status(404).json({ message: 'Remorque not found' });
         return res.json({ remorque });
     } catch (error) {
@@ -25,7 +25,7 @@ async function create(req, res) {
         if (!matricule || !marque || !modele || !annee || !capacite) {
             return res.status(400).json({ message: 'All fields are required' });
         }
-        const remorque = await Remorque.create({ matricule, marque, modele, annee, capacite, statut });
+        const remorque = await remorqueRepository.create({ matricule, marque, modele, annee, capacite, statut });
         return res.status(201).json({ message: 'Remorque created', remorque });
     } catch (error) {
         if (error.code === 11000) return res.status(400).json({ message: 'Matricule already exists' });
@@ -35,7 +35,7 @@ async function create(req, res) {
 
 async function update(req, res) {
     try {
-        const remorque = await Remorque.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+        const remorque = await remorqueRepository.update(req.params.id, req.body);
         if (!remorque) return res.status(404).json({ message: 'Remorque not found' });
         return res.json({ message: 'Remorque updated', remorque });
     } catch (error) {
@@ -45,7 +45,7 @@ async function update(req, res) {
 
 async function remove(req, res) {
     try {
-        const remorque = await Remorque.findByIdAndDelete(req.params.id);
+        const remorque = await remorqueRepository.remove(req.params.id);
         if (!remorque) return res.status(404).json({ message: 'Remorque not found' });
         return res.json({ message: 'Remorque deleted' });
     } catch (error) {
