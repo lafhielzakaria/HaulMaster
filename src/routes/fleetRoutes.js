@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../middlewares/authMiddleware');
 const { authorize } = require('../middlewares/roleMiddleware');
-const { getAll, getOne, create, update, remove } = require('../controllers/fleetController');
+const { getAll, getOne, create, update, remove, setStatus } = require('../controllers/fleetController');
 const validate = require('../validations/validate');
 const camionSchemas = require('../validations/schemas/camionSchemas');
 
@@ -156,5 +156,40 @@ router.put('/:id', authenticateToken, authorize('fleet:write'), validate(camionS
  *         description: Camion not found
  */
 router.delete('/:id', authenticateToken, authorize('fleet:write'), remove);
+
+/**
+ * @swagger
+ * /api/fleet/{id}/status:
+ *   patch:
+ *     summary: Update camion status (Admin)
+ *     tags: [Camions]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [statut]
+ *             properties:
+ *               statut:
+ *                 type: string
+ *                 enum: [active, inactive, out_of_service, maintenance]
+ *     responses:
+ *       200:
+ *         description: Camion status updated
+ *       400:
+ *         description: Invalid statut or already set
+ *       404:
+ *         description: Camion not found
+ */
+router.patch('/:id/status', authenticateToken, authorize('fleet:write'), setStatus);
 
 module.exports = router;
