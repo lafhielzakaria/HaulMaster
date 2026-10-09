@@ -7,6 +7,8 @@ const pneuRepository = {
 
     findOverLimitByCamion: (camionId) => Pneu.findOne({ camion: camionId, $expr: { $gt: ['$kilometrage', '$kilometrageMax'] } }),
 
+    findNearLimitByCamion: (camionId) => Pneu.findOne({ camion: camionId, $expr: { $gte: ['$kilometrage', '$kilometrageMax'] } }),
+
     create: (data) => Pneu.create(data),
 
     update: (id, data) => Pneu.findByIdAndUpdate(id, data, { new: true, runValidators: true }),

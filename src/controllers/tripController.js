@@ -42,8 +42,8 @@ async function startTripHandler(req, res, next) {
 
 async function completeTripHandler(req, res, next) {
     try {
-        const { endMileage, fuelConsumed, fuelCost, driverRemarks } = req.body;
-        const trip = await completeTrip(req.params.id, { endMileage, fuelConsumed, fuelCost, driverRemarks }, req.user.userId);
+        const { endMileage, fuelConsumed, fuelCost, driverRemarks, camionRemarks } = req.body;
+        const trip = await completeTrip(req.params.id, { endMileage, fuelConsumed, fuelCost, driverRemarks, camionRemarks }, req.user.userId);
         return res.status(200).json({ success: true, data: trip });
     } catch (error) {
         next(error);
