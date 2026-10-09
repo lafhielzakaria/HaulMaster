@@ -33,6 +33,9 @@ async function checkResourceAvailability(driver, camion, remorque, plannedStart,
     const overLimitTire = await pneuRepository.findOverLimitByCamion(camion);
     if (overLimitTire) throw Object.assign(new Error('Truck has a tire exceeding its mileage limit'), { statusCode: 409 });
 
+    const tireNearLimit = await pneuRepository.findNearLimitByCamion(camion);
+    if (tireNearLimit) throw Object.assign(new Error('Truck has a tire with no remaining mileage capacity'), { statusCode: 409 });
+
     const remorqueDoc = await remorqueRepository.findById(remorque);
     if (!remorqueDoc) throw Object.assign(new Error('Trailer not found'), { statusCode: 404 });
     if (remorqueDoc.statut === 'maintenance') throw Object.assign(new Error('Trailer is under maintenance'), { statusCode: 409 });

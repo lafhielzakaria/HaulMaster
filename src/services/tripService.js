@@ -1,5 +1,6 @@
 const trajetRepository = require('../repositories/trajetRepository');
 const { checkResourceAvailability } = require('./conflictService');
+const Pneu = require('../models/Pneu');
 
 async function assignTrip(data) {
     const { departureSite, arrivalSite, plannedStart, plannedEnd, driver, camion, remorque } = data;
@@ -35,7 +36,7 @@ async function startTrip(id, startMileage, userId) {
     return trajetRepository.save(trip);
 }
 
-async function completeTrip(id, { endMileage, fuelConsumed, fuelCost, driverRemarks }, userId) {
+async function completeTrip(id, { endMileage, fuelConsumed, fuelCost, driverRemarks, camionRemarks }, userId) {
     const trip = await trajetRepository.findById(id);
     if (!trip) throw Object.assign(new Error('Trip not found'), { statusCode: 404 });
     if (trip.driver.toString() !== userId) throw Object.assign(new Error('Access forbidden'), { statusCode: 403 });
@@ -47,13 +48,14 @@ async function completeTrip(id, { endMileage, fuelConsumed, fuelCost, driverRema
     trip.fuelConsumed = fuelConsumed;
     if (fuelCost) trip.fuelCost = fuelCost;
     if (driverRemarks) trip.driverRemarks = driverRemarks;
+    if (camionRemarks) trip.camionRemarks = camionRemarks;
 
-    if (trip.startMileage != null) {
-        trip.distance = endMileage - trip.startMileage;
-        if (fuelConsumed && trip.distance > 0) {
-            trip.averageConsumption = (fuelConsumed / trip.distance) * 100;
-        }
+    trip.distance = endMileage - trip.startMileage;
+    if (fuelConsumed && trip.distance > 0) {
+        trip.averageConsumption = (fuelConsumed / trip.distance) * 100;
     }
+
+    await Pneu.updateMany({ camion: trip.camion }, { $inc: { kilometrage: trip.distance } });
 
     return trajetRepository.save(trip);
 }

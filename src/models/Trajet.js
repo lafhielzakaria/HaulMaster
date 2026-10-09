@@ -45,6 +45,7 @@ const tripSchema = new mongoose.Schema(
     distance:           { type: Number },
     averageConsumption: { type: Number },
     driverRemarks:      { type: String },
+    camionRemarks:      { type: String },
   },
   {
     timestamps: true
