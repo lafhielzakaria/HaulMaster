@@ -39,7 +39,7 @@ const tripSchemas = require('../validations/schemas/tripSchemas');
  *       404:
  *         description: Driver not found
  */
-router.get('/driver/:id/pdf', authenticateToken, authorize('trip:read'), driverTripsPdfHandler);
+router.get('/driver/:id/pdf', authenticateToken, authorize('trip:own'), driverTripsPdfHandler);
 
 /**
  * @swagger

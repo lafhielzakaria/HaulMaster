@@ -52,9 +52,14 @@ async function completeTripHandler(req, res, next) {
 
 async function driverTripsPdfHandler(req, res, next) {
     try {
-        const driver = await userRepository.findByIdExcludePassword(req.params.id);
+        const requestedId = req.params.id;
+        const { userId, role } = req.user;
+        if (role === 'driver' && userId !== requestedId) {
+            return res.status(403).json({ message: 'Access denied. You can only generate your own PDF.' });
+        }
+        const driver = await userRepository.findByIdExcludePassword(requestedId);
         if (!driver) return res.status(404).json({ message: 'Driver not found' });
-        const trips = await trajetRepository.findByDriverActive(req.params.id);
+        const trips = await trajetRepository.findByDriverActive(requestedId);
         generateDriverTripsPdf(driver, trips, res);
     } catch (error) {
         next(error);

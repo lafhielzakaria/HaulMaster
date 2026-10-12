@@ -9,6 +9,7 @@ const permissions = {
     ],
     driver: [
         'trip:read',
+        'trip:own',
     ],
 };
 

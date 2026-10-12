@@ -1,3 +1,8 @@
+/*V2 tasks: 
+-analyse  : ndir function treturni kola driver ou score dyalo z3ma 3la kola total dyal xral consomma dyal fuel 3la total dyal km * 100
+
+*/
+
 require('dotenv').config();
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');

@@ -1,20 +1,26 @@
 const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const path = require('path');
+const { PassThrough } = require('stream');
+const { minioClient, BUCKET, ensureBucket } = require('../config/minio');
 
-function generateDriverTripsPdf(driver, trips, res) {
+async function generateDriverTripsPdf(driver, trips, res) {
+    await ensureBucket();
+
     const doc = new PDFDocument({ margin: 50 });
     const fileName = `trips_${driver._id}_${Date.now()}.pdf`;
-    const filePath = path.join(__dirname, '../../pdfs', fileName);
 
-    fs.mkdirSync(path.dirname(filePath), { recursive: true });
+    const minioStream = new PassThrough();
+    const resStream = new PassThrough();
 
-    const writeStream = fs.createWriteStream(filePath);
-    doc.pipe(writeStream);
-    doc.pipe(res);
+    doc.pipe(minioStream);
+    doc.pipe(resStream);
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+    resStream.pipe(res);
+
+    minioClient.putObject(BUCKET, fileName, minioStream, (err) => {
+        if (err) console.error('MinIO upload error:', err.message);
+    });
 
     doc.fontSize(18).text('HaulMaster — Ordre de Mission', { align: 'center' });
     doc.moveDown();

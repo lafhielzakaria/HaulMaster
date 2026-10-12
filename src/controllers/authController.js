@@ -31,7 +31,7 @@ async function login(req, res) {
         if (!isMatch) {
             return res.status(400).json({ message: 'Invalid email or password' });
         }
-        if (user.status === 'waiting_list') {
+        if (user.status === 'waiting_list'){
             return res.status(403).json({ message: 'Your account is pending admin approval.' });
         }
         if (user.status === 'inactive') {
