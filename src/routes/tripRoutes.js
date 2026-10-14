@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const { assignTripHandler, reassignTripHandler, startTripHandler, completeTripHandler, getAllTripsHandler, driverTripsPdfHandler } = require('../controllers/tripController');
+const { assignTripHandler, reassignTripHandler } = require('../controllers/tripController');
+const { getAllTripsHandler, startTripHandler, completeTripHandler, makePdfHandler } = require('../controllers/shared/tripHandlers');
 const authenticateToken = require('../middlewares/authMiddleware');
 const { authorize } = require('../middlewares/roleMiddleware');
 const validate = require('../validations/validate');
@@ -15,9 +16,9 @@ const tripSchemas = require('../validations/schemas/tripSchemas');
 
 /**
  * @swagger
- * /api/trips/driver/{id}/pdf:
+ * /api/trips/driver/{id}/pdf/local:
  *   get:
- *     summary: Generate PDF of incomplete trips for a driver (Admin)
+ *     summary: Generate PDF and save locally
  *     tags: [Trips]
  *     security:
  *       - bearerAuth: []
@@ -27,7 +28,6 @@ const tripSchemas = require('../validations/schemas/tripSchemas');
  *         required: true
  *         schema:
  *           type: string
- *         description: Driver user ID
  *     responses:
  *       200:
  *         description: PDF file
@@ -39,7 +39,34 @@ const tripSchemas = require('../validations/schemas/tripSchemas');
  *       404:
  *         description: Driver not found
  */
-router.get('/driver/:id/pdf', authenticateToken, authorize('trip:own'), driverTripsPdfHandler);
+router.get('/driver/:id/pdf/local', authenticateToken, authorize('trip:own'), makePdfHandler('local'));
+
+/**
+ * @swagger
+ * /api/trips/driver/{id}/pdf/minio:
+ *   get:
+ *     summary: Generate PDF and save to MinIO
+ *     tags: [Trips]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: PDF file
+ *         content:
+ *           application/pdf:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       404:
+ *         description: Driver not found
+ */
+router.get('/driver/:id/pdf/minio', authenticateToken, authorize('trip:own'), makePdfHandler('minio'));
 
 /**
  * @swagger
@@ -90,10 +117,8 @@ router.get('/', authenticateToken, authorize('trip:read'), getAllTripsHandler);
  *     responses:
  *       201:
  *         description: Trip assigned
- *       400:
- *         description: Validation error
  *       409:
- *         description: Conflict - resource already assigned
+ *         description: Conflict
  */
 router.post('/', authenticateToken, authorize('trip:write'), validate(tripSchemas.assign), assignTripHandler);
 
@@ -111,24 +136,9 @@ router.post('/', authenticateToken, authorize('trip:write'), validate(tripSchema
  *         required: true
  *         schema:
  *           type: string
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               driver:
- *                 type: string
- *               camion:
- *                 type: string
- *               remorque:
- *                 type: string
  *     responses:
  *       200:
  *         description: Trip reassigned
- *       404:
- *         description: Trip not found
  *       409:
  *         description: Conflict
  */
@@ -161,8 +171,6 @@ router.patch('/:id/reassign', authenticateToken, authorize('trip:write'), reassi
  *     responses:
  *       200:
  *         description: Trip started
- *       404:
- *         description: Trip not found
  */
 router.patch('/:id/start', authenticateToken, startTripHandler);
 
@@ -199,8 +207,6 @@ router.patch('/:id/start', authenticateToken, startTripHandler);
  *     responses:
  *       200:
  *         description: Trip completed
- *       404:
- *         description: Trip not found
  */
 router.patch('/:id/complete', authenticateToken, completeTripHandler);
 

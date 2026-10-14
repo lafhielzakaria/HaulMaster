@@ -1,4 +1,4 @@
-const pneuRepository = require('../repositories/pneuRepository');
+const pneuRepository = require('../../repositories/pneuRepository');
 
 async function getAll(req, res) {
     try {

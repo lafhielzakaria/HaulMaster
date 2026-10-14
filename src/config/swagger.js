@@ -20,7 +20,7 @@ const options = {
         },
         security: [{ bearerAuth: [] }],
     },
-    apis: ['./src/routes/*.js'],
+    apis: ['./src/routes/shared/*.js', './src/routes/v1/*.js', './src/routes/v2/*.js'],
 };
 
 module.exports = swaggerJsdoc(options);

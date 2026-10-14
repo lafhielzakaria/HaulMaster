@@ -1,38 +1,10 @@
 const PDFDocument = require('pdfkit');
+const fs = require('fs');
+const path = require('path');
 const { PassThrough } = require('stream');
+const { minioClient, BUCKET, ensureBucket } = require('../config/minio');
 
-let minioClient, BUCKET, ensureBucket;
-try {
-    const minio = require('../config/minio');
-    minioClient = minio.minioClient;
-    BUCKET = minio.BUCKET;
-    ensureBucket = minio.ensureBucket;
-} catch {
-    ensureBucket = async () => {};
-}
-
-async function generateDriverTripsPdf(driver, trips, res) {
-    await ensureBucket();
-
-    const doc = new PDFDocument({ margin: 50 });
-    const fileName = `trips_${driver._id}_${Date.now()}.pdf`;
-
-    const minioStream = new PassThrough();
-    const resStream = new PassThrough();
-
-    doc.pipe(minioStream);
-    doc.pipe(resStream);
-
-    res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
-    resStream.pipe(res);
-
-    if (minioClient) {
-        minioClient.putObject(BUCKET, fileName, minioStream, (err) => {
-            if (err) console.error('MinIO upload error:', err.message);
-        });
-    }
-
+function buildPdfContent(doc, driver, trips) {
     doc.fontSize(18).text('HaulMaster — Ordre de Mission', { align: 'center' });
     doc.moveDown();
     doc.fontSize(12).text(`Chauffeur : ${driver.email}`);
@@ -57,8 +29,42 @@ async function generateDriverTripsPdf(driver, trips, res) {
             doc.moveDown();
         });
     }
+}
 
-    doc.end();
+async function generateDriverTripsPdf(driver, trips, res, save = 'local') {
+    const fileName = `trips_${driver._id}_${Date.now()}.pdf`;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+
+    if (save === 'minio') {
+        await ensureBucket();
+        const doc = new PDFDocument({ margin: 50 });
+        const minioStream = new PassThrough();
+        const resStream = new PassThrough();
+
+        doc.pipe(minioStream);
+        doc.pipe(resStream);
+        resStream.pipe(res);
+
+        minioClient.putObject(BUCKET, fileName, minioStream, (err) => {
+            if (err) console.error('MinIO upload error:', err.message);
+        });
+
+        buildPdfContent(doc, driver, trips);
+        doc.end();
+    } else {
+        const doc = new PDFDocument({ margin: 50 });
+        const filePath = path.join(__dirname, '../../pdfs', fileName);
+        fs.mkdirSync(path.dirname(filePath), { recursive: true });
+
+        const writeStream = fs.createWriteStream(filePath);
+        doc.pipe(writeStream);
+        doc.pipe(res);
+
+        buildPdfContent(doc, driver, trips);
+        doc.end();
+    }
 }
 
 module.exports = { generateDriverTripsPdf };

@@ -1,4 +1,4 @@
-const camionRepository = require('../repositories/camionRepository');
+const camionRepository = require('../../repositories/camionRepository');
 
 async function getAll(req, res) {
     try {

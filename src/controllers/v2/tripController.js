@@ -50,7 +50,7 @@ async function driverTripsPdfHandler(req, res, next) {
         const driver = await userRepository.findByIdExcludePassword(requestedId);
         if (!driver) return res.status(404).json({ message: 'Driver not found' });
         const trips = await trajetRepository.findByDriverActive(requestedId);
-        await generateDriverTripsPdf(driver, trips, res);
+        await generateDriverTripsPdf(driver, trips, res, 'minio');
     } catch (error) { next(error); }
 }
 
