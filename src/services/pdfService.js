@@ -10,9 +10,15 @@ function buildPdfContent(doc, driver, trips) {
     doc.fontSize(12).text(`Chauffeur : ${driver.email}`);
     doc.text(`Date de génération : ${new Date().toLocaleDateString('fr-FR')}`);
     doc.moveDown();
-
     if (trips.length === 0) {
-        doc.text('Aucun trajet incomplet trouvé.');
+        doc.moveDown(2);
+        doc.fontSize(13).text('Aucune mission en cours', { align: 'center' });
+        doc.moveDown();
+        doc.fontSize(11).fillColor('gray').text(
+            'Ce chauffeur ne dispose d’aucune mission active ou en attente au moment de la génération de ce document.',
+            { align: 'center' }
+        );
+        doc.fillColor('black');
     } else {
         trips.forEach((trip, index) => {
             doc.moveTo(50, doc.y).lineTo(550, doc.y).stroke();
@@ -31,37 +37,52 @@ function buildPdfContent(doc, driver, trips) {
     }
 }
 
-async function generateDriverTripsPdf(driver, trips, res, save = 'local') {
-    const fileName = `ordre-mission_${Date.now()}.pdf`;
+function buildPdfBuffer(driver, trips) {
+    return new Promise((resolve, reject) => {
+        const doc = new PDFDocument({ margin: 50 });
+        const buffer = new PassThrough();
+        const chunks = [];
+        doc.pipe(buffer);
+        buffer.on('data', (chunk) => chunks.push(chunk));
+        buffer.on('end', () => resolve(Buffer.concat(chunks)));
+        buffer.on('error', reject);
+        buildPdfContent(doc, driver, trips);
+        doc.end();
+    });
+}
 
+async function removeIfExists(fileName) {
+    try {
+        await minioClient.statObject(BUCKET, fileName);
+        await minioClient.removeObject(BUCKET, fileName);
+    } catch {
+        // file does not exist, nothing to remove
+    }
+}
+
+async function generateDriverTripsPdf(driver, trips, res, save = 'local') {
+    const fileName = trips.length ? `ordre-mission_${trips[0]._id}.pdf` : `ordre-mission_no-trips.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
 
     if (save === 'minio') {
         await ensureBucket();
-        const doc = new PDFDocument({ margin: 50 });
+        await removeIfExists(fileName);
+
+        const pdfBuffer = await buildPdfBuffer(driver, trips);
         const minioStream = new PassThrough();
-        const resStream = new PassThrough();
-
-        doc.pipe(minioStream);
-        doc.pipe(resStream);
-        resStream.pipe(res);
-
-        minioClient.putObject(BUCKET, fileName, minioStream, (err) => {
+        minioStream.end(pdfBuffer);
+        minioClient.putObject(BUCKET, fileName, minioStream, pdfBuffer.length, (err) => {
             if (err) console.error('MinIO upload error:', err.message);
         });
-
-        buildPdfContent(doc, driver, trips);
-        doc.end();
+        res.end(pdfBuffer);
     } else {
         const doc = new PDFDocument({ margin: 50 });
         const filePath = path.join(__dirname, '../../pdfs', fileName);
         fs.mkdirSync(path.dirname(filePath), { recursive: true });
-
         const writeStream = fs.createWriteStream(filePath);
         doc.pipe(writeStream);
         doc.pipe(res);
-
         buildPdfContent(doc, driver, trips);
         doc.end();
     }

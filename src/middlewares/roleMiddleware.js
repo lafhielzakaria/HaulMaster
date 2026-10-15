@@ -6,6 +6,7 @@ const permissions = {
         'fleet:write',
         'trip:read',
         'trip:write',
+        'analytics:read',
     ],
     driver: [
         'trip:read',

@@ -6,5 +6,6 @@ router.use('/fleet',     require('../shared/fleetRoutes'));
 router.use('/pneu',      require('../shared/pneuRoutes'));
 router.use('/remorques', require('../shared/remorqueRoutes'));
 router.use('/trips',     require('./tripRoutes'));
+router.use('/analytics', require('./analyticsRoutes'));
 
 module.exports = router;
