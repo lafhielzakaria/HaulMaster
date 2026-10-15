@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const authController = require('../../controllers/authController');
+const authController = require('../../controllers/shared/authHandlers');
 const authenticateToken = require('../../middlewares/authMiddleware');
 const { authorize } = require('../../middlewares/roleMiddleware');
 const validate = require('../../validations/validate');
@@ -15,7 +15,7 @@ const authSchemas = require('../../validations/schemas/authSchemas');
 
 /**
  * @swagger
- * /api/v1/auth/register:
+ * /api/shared/auth/register:
  *   post:
  *     summary: Register a new driver account
  *     tags: [Auth]
@@ -42,7 +42,7 @@ router.post('/register', validate(authSchemas.register), authController.register
 
 /**
  * @swagger
- * /api/v1/auth/login:
+ * /api/shared/auth/login:
  *   post:
  *     summary: Login and get JWT token
  *     tags: [Auth]
@@ -71,7 +71,7 @@ router.post('/login', validate(authSchemas.login), authController.login);
 
 /**
  * @swagger
- * /api/v1/auth/profile:
+ * /api/shared/auth/profile:
  *   get:
  *     summary: Get current user profile
  *     tags: [Auth]
@@ -87,7 +87,7 @@ router.get('/profile', authenticateToken, authController.profile);
 
 /**
  * @swagger
- * /api/v1/auth/waiting-list:
+ * /api/shared/auth/waiting-list:
  *   get:
  *     summary: Get all users pending approval (Admin)
  *     tags: [Auth]
@@ -103,7 +103,7 @@ router.get('/waiting-list', authenticateToken, authorize('auth:getWaitingList'),
 
 /**
  * @swagger
- * /api/v1/auth/users/{id}/status:
+ * /api/shared/auth/users/{id}/status:
  *   patch:
  *     summary: Update user status (Admin)
  *     tags: [Auth]

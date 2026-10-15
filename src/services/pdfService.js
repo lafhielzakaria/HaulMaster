@@ -32,7 +32,7 @@ function buildPdfContent(doc, driver, trips) {
 }
 
 async function generateDriverTripsPdf(driver, trips, res, save = 'local') {
-    const fileName = `trips_${driver._id}_${Date.now()}.pdf`;
+    const fileName = `ordre-mission_${Date.now()}.pdf`;
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);

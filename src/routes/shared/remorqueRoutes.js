@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../../middlewares/authMiddleware');
 const { authorize } = require('../../middlewares/roleMiddleware');
-const { getAll, getOne, create, update, remove } = require('../../controllers/remorqueController');
+const { getAll, getOne, create, update, remove } = require('../../controllers/shared/remorqueHandlers');
 
 /**
  * @swagger

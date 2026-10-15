@@ -11,6 +11,7 @@ const connectDB = require('./src/config/db');
 const app = express();
 app.use(express.json());
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+app.use('/api/shared/auth', require('./src/routes/shared/authRoutes'));
 app.use('/api/v1', require('./src/routes/v1'));
 app.use('/api/v2', require('./src/routes/v2'));
 app.use((err, req, res, next) => {

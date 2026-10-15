@@ -1,5 +1,5 @@
 const { assignTrip, reassignTrip, startTrip, completeTrip } = require('../../services/tripService');
-const { generateDriverTripsPdf } = require('../../services/pdfService.v1');
+const { generateDriverTripsPdf } = require('../../services/pdfService');
 const trajetRepository = require('../../repositories/trajetRepository');
 const userRepository = require('../../repositories/userRepository');
 
@@ -50,7 +50,7 @@ async function driverTripsPdfHandler(req, res, next) {
         const driver = await userRepository.findByIdExcludePassword(requestedId);
         if (!driver) return res.status(404).json({ message: 'Driver not found' });
         const trips = await trajetRepository.findByDriverActive(requestedId);
-        generateDriverTripsPdf(driver, trips, res);
+        await generateDriverTripsPdf(driver, trips, res);
     } catch (error) { next(error); }
 }
 

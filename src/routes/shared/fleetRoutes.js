@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const authenticateToken = require('../../middlewares/authMiddleware');
 const { authorize } = require('../../middlewares/roleMiddleware');
-const { getAll, getOne, create, update, remove, setStatus } = require('../../controllers/fleetController');
+const { getAll, getOne, create, update, remove, setStatus } = require('../../controllers/shared/fleetHandlers');
 const validate = require('../../validations/validate');
 const camionSchemas = require('../../validations/schemas/camionSchemas');
 
