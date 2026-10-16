@@ -3,13 +3,10 @@ const Pneu = require('../models/Pneu');
 const Camion = require('../models/Camion');
 
 const analyticsRepository = {
-    // ga3 lfuel ligta3 driver / ga3 km lidrab * 100
-    //ngroupi bu driver ou njma3 ondir operation wst lgroup stage 
     ecoPerformance: () => Trajet.aggregate([
         {
             $match: {
                 status: "COMPLETED"
-
             }
         },
         {
@@ -36,13 +33,59 @@ const analyticsRepository = {
         },
 
     ]),
-// 4an jib 5 dyal xa7inat bu limit on order bu desc bu kilometrageMax - kilometrage
+    // 4an jib 5 dyal camion bu limit on order bu desc bu kilometrageMax - kilometrage
     tireHealthMatrix: () => Pneu.aggregate([
+        {
+            $match: {
+                statut: "active"
+            }
+        },
+        {
+            $addFields: {
+                difference: {
+                    $subtract: ["$kilometrageMax", "$kilometrage"]
+                }
+            }
+        },
+        {
+            $sort: { difference: -1 }
+        },
+        {
+            $project: {
+                camion: 1,
+                marque: 1,
+                taille: 1,
+                type: 1,
+                statut: 1,
+                kilometrage: 1,
+                kilometrageMax: 1,
+                difference: 1
 
+            }
+        },
+        {
+            $limit: 5
+        }
     ]),
 
     financialEsg: (startDate, endDate) => Trajet.aggregate([
+        {
+            $match: {
+                status: "COMPLETED"
+            }
+        },
+        {
+            $addFields: {
+                totalCo2EmissionsTonnes: {
+                    $divide: [
+                        {
+                            $multiply: ["", ""]
+                        }, 1000
+                    ]
+                }
 
+            }
+        },
     ]),
 
     fleetUtilizationTrends: () => Camion.aggregate([
