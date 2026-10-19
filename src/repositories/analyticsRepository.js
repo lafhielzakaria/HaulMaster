@@ -33,7 +33,6 @@ const analyticsRepository = {
         },
 
     ]),
-    // 4an jib 5 dyal camion bu limit on order bu desc bu kilometrageMax - kilometrage
     tireHealthMatrix: () => Pneu.aggregate([
         {
             $match: {
@@ -68,7 +67,9 @@ const analyticsRepository = {
         }
     ]),
 
-    financialEsg: (startDate, endDate) => Trajet.aggregate([
+
+
+    financialEsg: () => Trajet.aggregate([
         {
             $match: {
                 status: "COMPLETED"
@@ -79,19 +80,46 @@ const analyticsRepository = {
                 totalCo2EmissionsTonnes: {
                     $divide: [
                         {
-                            $multiply: ["", ""]
-                        }, 1000
+                            $multiply: [
+                                "$fuelConsumedLiters",
+                                2.68
+                            ]
+                        },
+                        1000
                     ]
                 }
-
             }
         },
+        {
+            $group: {
+                _id: null,
+                totalCompletedTrips: {
+                    $sum: 1
+                },
+                totalFuelConsumedLiters: {
+                    $sum: "$fuelConsumedLiters"
+                },
+                totalCo2EmissionsTonnes: {
+                    $sum: "$totalCo2EmissionsTonnes"
+                }
+            }
+        },
+        {
+            $project: {
+                _id: 0,
+                totalCompletedTrips: 1,
+                totalFuelConsumedLiters: 1,
+                totalCo2EmissionsTonnes: 1
+            }
+        }
     ]),
+
+
+
 
     fleetUtilizationTrends: () => Camion.aggregate([
-
-    ]),
-
+        
+    ])
 };
 
 module.exports = analyticsRepository;
