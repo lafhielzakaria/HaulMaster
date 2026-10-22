@@ -117,8 +117,47 @@ const analyticsRepository = {
 
 
 
-    fleetUtilizationTrends: () => Camion.aggregate([
-        
+    fleetUtilizationTrends: () => Trajet.aggregate([
+        {
+            $match: {
+                status: "COMPLETED",
+                plannedStart: { $type: "date" },
+                plannedEnd: { $type: "date" },
+                $expr: {
+                    $gt: ["$plannedEnd", "$plannedStart"]
+                }
+            }
+        },
+        {
+            $group: {
+                _id: {
+                    $dateToString: {
+                        format: "%Y-%m",
+                        date: "$plannedStart"
+                    }
+                },
+                missionDurationHours: {
+                    $sum: {
+                        $divide: [
+                            { $subtract: ["$plannedEnd", "$plannedStart"] },
+                            3600000
+                        ]
+                    }
+                },
+                completedTrips: { $sum: 1 }
+            }
+        },
+        {
+            $sort: { _id: 1 }
+        },
+        {
+            $project: {
+                _id: 0,
+                month: "$_id",
+                missionDurationHours: 1,
+                completedTrips: 1
+            }
+        }
     ])
 };
 
