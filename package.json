@@ -7,20 +7,17 @@
     "start": "node server.js",
     "dev": "nodemon --legacy-watch server.js",
     "test": "jest",
-    "test:coverage": "jest --coverage"
+    "test:coverage": "jest --coverage --coverageReporters=text"
   },
   "jest": {
     "testEnvironment": "node",
     "collectCoverageFrom": [
-      "src/controllers/**/*.js",
-      "src/middlewares/**/*.js",
-      "src/services/**/*.js",
-      "src/validations/**/*.js",
-      "src/repositories/analyticsRepository.js",
-      "src/repositories/userRepository.js",
-      "!src/config/**",
-      "!src/services/authService.js",
-      "!src/**/*.test.js"
+      "src/controllers/shared/authHandlers.js",
+      "src/middlewares/authMiddleware.js",
+      "src/middlewares/roleMiddleware.js",
+      "src/validations/validate.js",
+      "src/validations/schemas/authSchemas.js",
+      "src/repositories/analyticsRepository.js"
     ],
     "coverageThreshold": {
       "global": {

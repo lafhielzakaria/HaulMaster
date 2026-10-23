@@ -1,7 +1,6 @@
 const Trajet = require('../models/Trajet');
 const Pneu = require('../models/Pneu');
 const Camion = require('../models/Camion');
-
 const analyticsRepository = {
     ecoPerformance: () => Trajet.aggregate([
         {
@@ -66,10 +65,7 @@ const analyticsRepository = {
             $limit: 5
         }
     ]),
-
-
-
-    financialEsg: () => Trajet.aggregate([
+  financialEsg: () => Trajet.aggregate([
         {
             $match: {
                 status: "COMPLETED"
@@ -113,10 +109,6 @@ const analyticsRepository = {
             }
         }
     ]),
-
-
-
-
     fleetUtilizationTrends: () => Trajet.aggregate([
         {
             $match: {
@@ -160,5 +152,4 @@ const analyticsRepository = {
         }
     ])
 };
-
 module.exports = analyticsRepository;
